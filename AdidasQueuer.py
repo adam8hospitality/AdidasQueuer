@@ -5,7 +5,7 @@ import webbrowser
 
 from selenium import webdriver
 
-current_verson = '1.1.0.1'
+current_verson = '1.1.0.2'
 
 adidas_host = None
 
@@ -131,6 +131,8 @@ def check_updates():
             print('You can find the latest version here https://github.com/hunterbdm/AdidasQueuer/')
             webbrowser.open('https://github.com/hunterbdm/AdidasQueuer/')
             exit()
+        print('No updates currently available. Version:', current_verson)
+        return
     print('Unable to check for updates.')
     return
 
