@@ -5,7 +5,7 @@ import webbrowser
 
 from selenium import webdriver
 
-current_verson = '1.1.0.0'
+current_verson = '1.1.0.1'
 
 adidas_host = None
 
@@ -111,23 +111,28 @@ def check_updates():
     except:
         print('Unable to check for updates.')
         return
-    # Grab first line in readme. Will look like this 'Latest Version: 1.0.0.0'
-    latest = (response.text.split('\n')[0])
-    # Will remove 'Latest Version: ' from string so we just have the version number
-    latest = latest[(latest.index(':') + 2):]
-    if not latest == current_verson:
-        print('You are not on the latest version.')
-        print('Your version:', current_verson)
-        print('Latest version:', latest)
-        x = input('Would you like to download the latest version? (Y/N) ').upper()
-        while not x == 'Y' and not x == 'N':
-            print('Invalid input.')
+
+    # If for some reason I forget to add the version to readme I dont want it to fuck up
+    if 'Latest Version' in response.text:
+        # Grab first line in readme. Will look like this 'Latest Version: 1.0.0.0'
+        latest = (response.text.split('\n')[0])
+        # Will remove 'Latest Version: ' from string so we just have the version number
+        latest = latest[(latest.index(':') + 2):]
+        if not latest == current_verson:
+            print('You are not on the latest version.')
+            print('Your version:', current_verson)
+            print('Latest version:', latest)
             x = input('Would you like to download the latest version? (Y/N) ').upper()
-        if x == 'N':
-            return
-        print('You can find the latest version here https://github.com/hunterbdm/AdidasQueuer/')
-        webbrowser.open('https://github.com/hunterbdm/AdidasQueuer/')
-        exit()
+            while not x == 'Y' and not x == 'N':
+                print('Invalid input.')
+                x = input('Would you like to download the latest version? (Y/N) ').upper()
+            if x == 'N':
+                return
+            print('You can find the latest version here https://github.com/hunterbdm/AdidasQueuer/')
+            webbrowser.open('https://github.com/hunterbdm/AdidasQueuer/')
+            exit()
+    print('Unable to check for updates.')
+    return
 
 
 def start(url, proxies=None):
