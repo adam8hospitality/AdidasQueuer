@@ -1,9 +1,11 @@
 import requests
 import time
 import threading
+import webbrowser
 
 from selenium import webdriver
 
+current_verson = '1.1.0.0'
 
 adidas_host = None
 
@@ -75,6 +77,9 @@ def main():
     )
 
     global adidas_host
+
+    check_updates()
+
     country_code = input('Enter country code: ').upper()
 
     while not (country_code in marketDomains):
@@ -97,6 +102,32 @@ def main():
 
     while True:
         time.sleep(5)
+
+
+def check_updates():
+    # Check if the current version is outdated
+    try:
+        response = requests.get('https://raw.githubusercontent.com/hunterbdm/AdidasQueuer/master/README.md')
+    except:
+        print('Unable to check for updates.')
+        return
+    # Grab first line in readme. Will look like this 'Latest Version: 1.0.0.0'
+    latest = (response.text.split('\n')[0])
+    # Will remove 'Latest Version: ' from string so we just have the version number
+    latest = latest[(latest.index(':') + 2):]
+    if not latest == current_verson:
+        print('You are not on the latest version.')
+        print('Your version:', current_verson)
+        print('Latest version:', latest)
+        x = input('Would you like to download the latest version? (Y/N) ').upper()
+        while not x == 'Y' and not x == 'N':
+            print('Invalid input.')
+            x = input('Would you like to download the latest version? (Y/N) ').upper()
+        if x == 'N':
+            return
+        print('You can find the latest version here https://github.com/hunterbdm/AdidasQueuer/')
+        webbrowser.open('https://github.com/hunterbdm/AdidasQueuer/')
+        exit()
 
 
 def start(url, proxies=None):
