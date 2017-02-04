@@ -5,7 +5,7 @@ import webbrowser
 
 from selenium import webdriver
 
-current_verson = '1.1.0.2'
+current_version = '1.1.2'
 
 adidas_host = None
 
@@ -118,9 +118,9 @@ def check_updates():
         latest = (response.text.split('\n')[0])
         # Will remove 'Latest Version: ' from string so we just have the version number
         latest = latest[(latest.index(':') + 2):]
-        if not latest == current_verson:
+        if not latest == current_version:
             print('You are not on the latest version.')
-            print('Your version:', current_verson)
+            print('Your version:', current_version)
             print('Latest version:', latest)
             x = input('Would you like to download the latest version? (Y/N) ').upper()
             while not x == 'Y' and not x == 'N':
@@ -131,7 +131,7 @@ def check_updates():
             print('You can find the latest version here https://github.com/hunterbdm/AdidasQueuer/')
             webbrowser.open('https://github.com/hunterbdm/AdidasQueuer/')
             exit()
-        print('No updates currently available. Version:', current_verson)
+        print('No updates currently available. Version:', current_version)
         return
     print('Unable to check for updates.')
     return

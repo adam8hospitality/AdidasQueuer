@@ -1,4 +1,4 @@
-Latest Version: 1.1.0.2
+Latest Version: 1.1.2
 
 # AdidasQueuer
 
@@ -13,7 +13,7 @@ Latest Version: 1.1.0.2
 
 0. Add proxies(if any) to proxies.txt
 1. Open cmd as Administrator
-2. Change directory to AdidasQueuer folder
+2. Change directory to AdidasQueuer folder. Example: 'cd C:\Users\Hunter\Desktop\AdidasQueuer'
 3. 'python AdidasQueuer.py'
 
 # How it Works
