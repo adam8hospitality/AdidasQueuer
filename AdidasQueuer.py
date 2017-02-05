@@ -5,7 +5,7 @@ import webbrowser
 
 from selenium import webdriver
 
-current_version = '1.1.2'
+current_version = '1.1.3'
 
 adidas_host = None
 
@@ -89,16 +89,27 @@ def main():
     adidas_host = 'http://www.' + marketDomains[country_code]
     print('Adidas url: ', adidas_host)
 
-    url = input('Splash page url: ')
-    proxies_txt = open('proxies.txt')
-    proxies = proxies_txt.readlines()
-
-    if len(proxies) == 0:
-        print('No proxies found in proxies.txt, starting without proxies.')
-        start(url)
-    else:
-        print(str(len(proxies)) + ' proxies found.')
-        start(url, proxies=proxies)
+    try:
+        url = input('Splash page url: ')
+        proxies_txt = open('proxies.txt')
+        proxies = proxies_txt.readlines()
+        if len(proxies) == 0:
+            print('No proxies found in proxies.txt, starting without proxies.')
+            start(url)
+        else:
+            print(str(len(proxies)) + ' proxies found.')
+            start(url, proxies=proxies)
+    except:
+        print('Unable to read proxies.txt')
+        x = input('Start without proxies? (Y/N)').upper()
+        while not x == 'Y' and not x == 'N':
+            print('Invalid input.')
+            x = input('Start without proxies? (Y/N)').upper()
+        if x == 'Y':
+            print('Starting without proxies.')
+            start(url)
+        else:
+            quit()
 
     while True:
         time.sleep(5)
@@ -143,7 +154,6 @@ def start(url, proxies=None):
     :param proxies: Array of proxies
     :return: none
     """
-    print('Starting with proxies. Press END to quit.')
 
     if proxies:
         for proxy in proxies:

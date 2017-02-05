@@ -1,4 +1,4 @@
-Latest Version: 1.1.2
+Latest Version: 1.1.3
 
 # AdidasQueuer
 
