@@ -4,8 +4,9 @@ import threading
 import webbrowser
 
 from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-current_version = '1.1.3'
+current_version = '1.2.0'
 
 adidas_host = None
 
@@ -159,6 +160,10 @@ def start(url, proxies=None):
         for proxy in proxies:
             # \n gets left behind and will fuck up the requests later on
             proxy = proxy.replace('\n', '')
+            #proxy_split = proxy.split(':')
+            #if len(proxy_split) > 2:
+            #    proxy = 'http://' + proxy_split[2] + ':' + proxy_split[3] + '@' + proxy_split[0] + ':' + proxy_split[1]
+
             t = threading.Thread(target=_start, args=(url, proxy,))
             t.daemon = True
             t.start()
@@ -175,37 +180,40 @@ def _start(url, proxy):
     :param proxies: Array of proxies, or None if no proxies
     :return: none
     """
-    session = requests.Session()
-
-    # Update User-Agent in session's headers
-    session.headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
-    }
-
-    time.sleep(1.5)
-    session.cookies.clear_session_cookies()
-
-    if proxy:
-        proxies = {
-            'http': proxy,
-            'https': proxy
-        }
-        print('Entering queue with proxy', proxy)
+    dcap = dict(DesiredCapabilities.PHANTOMJS)
+    dcap["phantomjs.page.settings.userAgent"] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+    if proxy is not None:
+        proxy_split = proxy.split(':')
+        if len(proxy_split) > 2:
+            service_args = [
+                '--proxy=' + 'http://' + proxy_split[2] + ':' + proxy_split[3] + '@' + proxy_split[0] + ':' + proxy_split[1],
+                '--proxy-auth=' + proxy_split[2] + ':' + proxy_split[3]
+            ]
+        else:
+            service_args = [
+                '--proxy=' + proxy
+            ]
+        print('Entering queue with proxy ' + proxy)
+        driver = webdriver.PhantomJS(desired_capabilities=dcap, service_args=service_args)
     else:
-        proxies = None
         print('Entering queue without proxy.')
+        driver = webdriver.PhantomJS(desired_capabilities=dcap)
 
     while True:
-        time.sleep(1.5)
-        resp = session.get(url, proxies=proxies)
+        time.sleep(10)
+        driver.get(url)
         # If captcha is on page then we got through splash.
-        if 'data-sitekey' in resp.text:
+        if 'data-sitekey' in driver.page_source:
             if proxy:
                 print('Proxy ' + proxy + ' got through queue. Transferring session.')
             else:
                 print('Got through queue. Transferring session.')
 
-            transfer_session(resp.url, session.cookies.get_dict(), resp.text, proxy=proxy)
+            fixed_source = driver.page_source
+            fixed_source = fixed_source.replace('= "/', ('= "' + adidas_host + '/'))
+            fixed_source = fixed_source.replace('="/', ('="' + adidas_host + '/'))
+
+            transfer_session(driver.current_url, driver.get_cookies(), fixed_source, proxy=(None if proxy is None else service_args[0]))
             return
 
 
@@ -218,21 +226,20 @@ def transfer_session(url, cookies, page_source, proxy=None):
     browser = webdriver.Chrome(chrome_options=options)
 
     # Must be on adidas to set cookies for adidas, so just go to a 404 page and set cookies first.
-    browser.get(adidas_host + '/settingcookies404')
+    browser.get(adidas_host + '/404settingcookies')
     browser.delete_all_cookies()
-    for cookie in cookies:
-        c = {
-            'name': cookie,
-            'value': cookies[cookie],
-            'path': '/'
-        }
-        browser.add_cookie(c)
+    [browser.add_cookie(cookie) for cookie in cookies]
+    browser.get(url)
 
+    # None if this currently in use, but it may be needed in the future.
+    """
     # Go to splash page url so that the referral will show it
+    url = 'http://www.adidas.com/com/apps/dqg2cs/vp_assets/images/350-v2/red2/adidas_YEEZY_350_V2_RB_Lateral_' \
+          'Left-red2.jpg?env=&v=16.05'
     browser.get(url)
 
     # Setup script to change the HTML to that of the passed splash page.
-    script = """
+    script = """"""
         function setHTML (html) {
             document.body.insertAdjacentHTML('beforeEnd', html);
             var range = document.createRange();
@@ -242,11 +249,22 @@ def transfer_session(url, cookies, page_source, proxy=None):
             document.body.appendChild(docFrag);
         }
         html = `{{ html }}`
-        setHTML(html)
+        setHTML(html)"""
     """
     script = script.replace("{{ html }}", page_source)
 
     browser.execute_script(script)
+
+    try:
+        while True:
+            # If for some reason the html gets reset, set it again.
+            if (browser.current_url == url) and not ('data-sitekey' in browser.page_source):
+                browser.execute_script(script)
+            time.sleep(1)
+    except:
+        # If we get error here then browser was closed.
+        return
+    """
 
 
 if __name__ == '__main__':
