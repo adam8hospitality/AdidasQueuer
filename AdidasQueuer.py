@@ -6,7 +6,7 @@ import webbrowser
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-current_version = '1.2.0'
+current_version = '1.2.1'
 
 adidas_host = None
 
